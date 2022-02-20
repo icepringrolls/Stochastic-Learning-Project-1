@@ -287,17 +287,25 @@ pred.KNN <- model.KNN[0:nrow(test)]
 # iv)
 ```{r}
 # Calculate specificity and sensitivity
+print("Sensitivity for logistic regression:")
 sensitivity(as.factor(pred.LR), as.factor(test$adelie))
-sensitivity(as.factor(pred.KNN), as.factor(test$adelie))
+print("Sensitivity for QDA:")
 sensitivity(as.factor(pred.QDA), as.factor(test$adelie))
+print("Sensitivity for KNN:")
+sensitivity(as.factor(pred.KNN), as.factor(test$adelie))
 
+print("Specificity for logistic regression:")
 specificity(as.factor(pred.LR), as.factor(test$adelie))
-specificity(as.factor(pred.KNN), as.factor(test$adelie))
+print("Specificity for QDA:")
 specificity(as.factor(pred.QDA), as.factor(test$adelie))
+print("Specificity for KNN:")
+specificity(as.factor(pred.KNN), as.factor(test$adelie))
 
 ```
 
 ## b)
+
+# i)
 ```{r}
 # ROC for different classifiers
 roc.LR <- roc(test$adelie, pred.LR.prob)
@@ -322,9 +330,16 @@ ggroc(roc.list, aes = "col",legacy.axes = TRUE) +
 roc.LR$auc
 roc.KNN$auc
 roc.QDA$auc
-
-
 ```
+# ii)
+The ROC curve shows how the binary classifiers are performing with a varying threshold. The plot shows the true positive rate, or sensitivity, against the true negative rate, or 1 - specificity. If a classifier is on the black diagonal line it performs just as good as guessing randomly and if it lays above the diagonal line it performs better. This means that a classifier is better the further up in the left corner its ROC curve are. In this case the logistic regression and the QDA performs better than the KNN classifier.
+
+The AUC, or area under the curve, is just the area under the ROC curve and provides an aggregate measure of all classifiers for all thresholds. As expected, the AUC for the logistic regression and the QDA are higher than the one for the KNN indicating better performance. 
+
+# iii)
+We would say the logistic regression model is the most interpretable model. This model provides easy to understand betas telling about the realtionship between the body mass and flipper length and if the penguin is Adelie or not. The two other models does not provide the same information about the data.
+
+
 ## c)
 ```{r}
 model.LR$coefficients
