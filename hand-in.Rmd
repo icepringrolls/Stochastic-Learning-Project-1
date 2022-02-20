@@ -165,18 +165,21 @@ penguin.model.mine <- lm(body_mass_g ~ flipper_length_mm  + bill_length_mm + spe
 
 
 # Look at the model coefficients
+print("Original model")
 summary(penguin.model.initial)$coefficients
+print("Basel's model")
 summary(penguin.model.basel)$coefficients
+print("Final model")
 summary(penguin.model.mine)$coefficients
 
 # Fit final model without sex
 summary(penguin.model.mine)
 
 #F-test between initial model and Basel's final model
-anova(final.model,penguin.model)
+anova(penguin.model.basel,penguin.model.mine)
 
 #F-test between initial model and our final model
-anova(penguin.model,penguin.model.test)
+anova(penguin.model.initial,penguin.model.mine)
 
 #95% confidence interval of our model
 confint(penguin.model.mine)
@@ -185,20 +188,22 @@ confint(penguin.model.mine)
 
 ```
 
-In the initial model, a linear regression with body mass as the response, and flipper length, bill depth, bill length, species and sex as covariates, as well as an interaction effect between bill depth and species. An F-test was conduceted between the original model with all covariates and basel's model resulting in a F-value of 34.5 and Pr(>F) of 1.049e-08. This indicates that the covariates term that Basel have eliminated are important and should be included. Looking back at the original model, the interaction term between species and bill depth has the highest p-value and therefore a model without the interaction term was generated. This theory was further evidenced by plots generated in part (b).An F-test was conducted to check the importance of the interaction term between billdepth and species. This gave a F-value of 5.1625 and a Pr(>F) of 0.006193. Though this might mean that the interaction term between billdepth and species have some significance, it is the least significant and have been chosen to be omitted for simplicity. The final model without the interaction term but all the other covairaites have low p-values for all covariates. Based on the dummy variable for Gentoo penguins being the larges (657), and no species interaction term the Gentoo penguins have in general the largest mass. However this is done assuming that the other covariates, bill_depth and flipper_length, are independent of species, which is not the case. The final model is therefore given by the equations.    
+In the initial model, a linear regression with body mass as the response, and flipper length, bill depth, bill length, species and sex as covariates, as well as an interaction effect between bill depth and species. An F-test was conduceted between the original model with all covariates and basel's model resulting in a F-value of 34.5 and Pr(>F) of 1.049e-08. This indicates that the covariate terms that Basel have eliminated were actually quite important and should be included. Looking back at the original model, the interaction term between species and bill depth has the highest p-value and therefore a model without the interaction term was considered. This theory was further evidenced by plots generated in part (b).An F-test was conducted to check the importance of the interaction term between billdepth and species. This gave a F-value of 5.1625 and a Pr(>F) of 0.006193. Though this might mean that the interaction term between billdepth and species have some significance, it is the least significant and have been chosen to be omitted for simplicity. The final model without the interaction term have low p-values for all included covariates. Based on the dummy variable for Gentoo penguins being the largest (657), and no species interaction term the Gentoo penguins have in general the largest mass. However this is done assuming that the other covariates, bill_depth and flipper_length, are independent of species, which might not the case. The final model is therefore given by the equations.    
 
 $$
 \begin{aligned}
   \hat{y}_{adelie} &= \hat\beta_0 + \hat\beta_{flipper\_length} x_{flipper\_length} +      \hat\beta_{bill\_depth} x_{bill\_depth} + \hat\beta_{bill\_length} x_{bill\_length}\\
-  \hat{y}_{chinstrap} &= \hat\beta_0 + \hat\beta_{flipper\_length} x_{flipper\_length} + \hat\beta_{bill\_length} x_{bill\_length} + \hat\beta_{chinstrap} \\
-\hat{y}_{gentoo} &= \hat\beta_0 + \hat\beta_{flipper\_length} x_{flipper\_length} + \hat\beta_{bill\_length} x_{bill\_length} + \hat\beta_{gentoo} 
+  \hat{y}_{chinstrap} &= \hat\beta_0 + \hat\beta_{flipper\_length} x_{flipper\_length} + \hat\beta_{bill\_length} x_{bill\_length} +\hat\beta_{bill\_depth} x_{bill\_depth} +\hat\beta_{chinstrap} \\
+\hat{y}_{gentoo} &= \hat\beta_0 + \hat\beta_{flipper\_length} x_{flipper\_length} + \hat\beta_{bill\_length} x_{bill\_length} + \hat\beta_{bill\_depth} x_{bill\_depth} +\hat\beta_{gentoo} 
 \end{aligned}
 $$
 The 95% confidence window for each of the covariate coefficient is also given above. 
 
 
-A plot to evaluate the fit for the model is generated below.
+A Tukey-Anscombe plot to evaluate the fit of the model is generated below. No clear correlation can be seen between the residuals and fitted values, indicating that the expected value of the residual is 0 and that they all have the same variance.
 ```{r fig.dim = c(10,10)}
+library(sfsmisc)
+TA.plot( penguin.model.mine, fit = fitted(penguin.model.mine), res = residuals(penguin.model.mine), labels = "*" )
 
 
 
