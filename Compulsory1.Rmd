@@ -207,8 +207,8 @@ Identify three of the mistakes Basil made (there are more than three, but only r
 
   1)Basel have understood the meaning of p-values. He has excluded the sex covariate as he mentioned that it has the smallest p-value. However, a small p-value indicates that the  sex covariate has significant importance in determine the body mass of penguins. A F-test should be conducted before the choice of omitting the sex covariate.   
   2)The body  mass of penguins has been described to be dependent on the species of the penguin. This done despite the fact that species have the highest p-value in the original model. This is evident by an extremely high p-value for the species coefficients in the final model which suggests that there is a high probability for observing the null hypothesis, where there is no relationship between species and body mass.A F-test can be conducted to determine if species should be omitted. 
-  3)Basel concludes that chinstrap penguins have the largest body mass from the fact that the dummy variable for chinstrap penguins have the largest value. However he does not consider that the interaction effect between bill depth and Chinstrap is the only negative term while the others are positive. The final body mass for chinstraps can therefore be lower than the other species due to this interaction term.
-  4) Bill length has been omitted even from the original model even though 
+  3)Basel concludes that chinstrap penguins have the largest body mass from the fact that the dummy variable for chinstrap penguins have the largest value. However he does not consider that the interaction effect between bill depth and Chinstrap is the only negative term while the others are positive. The final body mass for chinstraps can therefore be lower than the other species due to this interaction term. Correlation between bill depth and species are not considered as well.
+   
 
 
 ## b) (1P) 
