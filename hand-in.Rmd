@@ -206,7 +206,9 @@ A plot to evaluate the fit for the model is generated below.
 
 
 # Problem 3
+
 Load and prepare data the problem 3
+
 ```{r}
 # Load libraries
 library(tidyverse)
@@ -241,8 +243,11 @@ train_ind <- sample(seq_len(nrow(Penguins_reduced)), size = training_set_size)
 train <- Penguins_reduced[train_ind, ]
 test <- Penguins_reduced[-train_ind, ]
 ```
+
 ## a)
+
 # i)
+
 ```{r}
 # Make logistic regression model
 model.LR <- glm(adelie ~ body_mass_g + flipper_length_mm,
@@ -255,7 +260,9 @@ pred.LR.prob <- model.LR %>% predict(test)
 # Classify on test set using 0.5 cutoff
 pred.LR <- ifelse(pred.LR.prob > 0.5, 1, 0)
 ```
+
 # ii)
+
 ```{r}
 # Make quadratic discriminant analysis model
 model.QDA <- qda(adelie ~ body_mass_g + flipper_length_mm,
@@ -269,6 +276,7 @@ pred.QDA <- ifelse(pred.QDA.prob > 0.5, 1, 0)
 ```
 
 # iii)
+
 ```{r}
 # K-nearest neighbor
 model.KNN <- knn(train = train,
@@ -285,6 +293,7 @@ pred.KNN <- model.KNN[0:nrow(test)]
 ```
 
 # iv)
+
 ```{r}
 # Calculate specificity and sensitivity
 print("Sensitivity for logistic regression:")
@@ -306,6 +315,7 @@ specificity(as.factor(pred.KNN), as.factor(test$adelie))
 ## b)
 
 # i)
+
 ```{r}
 # ROC for different classifiers
 roc.LR <- roc(test$adelie, pred.LR.prob)
@@ -331,32 +341,35 @@ roc.LR$auc
 roc.KNN$auc
 roc.QDA$auc
 ```
+
 # ii)
+
 The ROC curve shows how the binary classifiers are performing with a varying threshold. The plot shows the true positive rate, or sensitivity, against the true negative rate, or 1 - specificity. If a classifier is on the black diagonal line it performs just as good as guessing randomly and if it lays above the diagonal line it performs better. This means that a classifier is better the further up in the left corner its ROC curve are. In this case the logistic regression and the QDA performs better than the KNN classifier.
 
-The AUC, or area under the curve, is just the area under the ROC curve and provides an aggregate measure of all classifiers for all thresholds. As expected, the AUC for the logistic regression and the QDA are higher than the one for the KNN indicating better performance. 
+The AUC, or area under the curve, is just the area under the ROC curve and provides an aggregate measure of all classifiers for all thresholds. As expected, the AUC for the logistic regression and the QDA are higher than the one for the KNN indicating better performance.
 
 # iii)
+
 We would say the logistic regression model is the most interpretable model. This model provides easy to understand betas telling about the realtionship between the body mass and flipper length and if the penguin is Adelie or not. The two other models does not provide the same information about the data.
 
-
 ## c)
+
 ```{r}
 model.LR$coefficients
 ```
-Increasing the body mass of penguin with 1000g will result in the following change in the oddds
 
-$$ 
-\begin{equation}
+Increasing the body mass of penguin with 1000g will result in the following change in the odds
 
-exp(0.0007120 * 1000) = 2.028
+\$\$ \begin{equation}
 
-\end{equation}
-$$
-The odds increases by a factor of 2.028.
+exp(0.0007120 * 1000) = 2.038
 
+\end{equation} \$\$
+
+The odds increases by a factor of 2.038. Alternative iii.
 
 ## d)
+
 ```{r}
 # Get all data, from both test and training
 penguins.pred.all <- Penguins_reduced %>% dplyr::select(-adelie)
@@ -377,6 +390,5 @@ ggplot(penguins.pred.all, aes(x=flipper_length_mm, y=body_mass_g)) +
   scale_colour_discrete(labels=c("Not Adelie", "Adelie")) +
   scale_shape_discrete(labels=c("Not Adelie", "Adelie"))
 ```
-
 
 # Problem 4
