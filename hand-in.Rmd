@@ -255,7 +255,7 @@ model.LR <- glm(adelie ~ body_mass_g + flipper_length_mm,
                  data=train)
 
 # Get classification probabilities
-pred.LR.prob <- model.LR %>% predict(test)
+pred.LR.prob <- model.LR %>% predict(test, type="response")
 
 # Classify on test set using 0.5 cutoff
 pred.LR <- ifelse(pred.LR.prob > 0.5, 1, 0)
