@@ -36,16 +36,16 @@ library("palmerpenguins")
 # Problem 1
 
 ## a)
-
-The expected MSE on the test set is given by: $$\begin{aligned}
-  E[(y_0 - \hat{f}(x_0))^2] &= 
-  E[(f(x_0) - \hat{f}(x_0) + \epsilon)^2] \\
+The expected MSE on the test set is given by:
+$$\begin{aligned}
+  E[(y_0 - \hat{f}(x_0))^2] 
+  &= E[(f(x_0) - \hat{f}(x_0) + \epsilon)^2] \\
   &= E[(f(x_0) - \hat{f}(x_0))^2] + 2E[\epsilon(f(x_0) - \hat{f}(x_0))] + E[\epsilon^2] \\
   &= E[f(x_0)^2 - 2f(x_0)\hat{f}(x_0)] + E[\hat{f}(x_0)^2] + E[\epsilon^2]\\
-  &= E[f(x_0)^2 - 2f(x_0)\hat{f}(x_0) + \hat{f}(x_0)^2] 
+  &= E[f(x_0)^2 - 2f(x_0)\hat{f}(x_0)] + E[\hat{f}(x_0)]^2 
   + ( E[\hat{f}(x_0)^2] - E[\hat{f}(x_0)]^2) + E[\epsilon^2] \\
-  &= E[(f(x_0) - \hat{f}(x_0))^2] + ( E[\hat{f}(x_0)^2] - E[\hat{f}(x_0)]^2) + E[\epsilon^2]\\
-  &= E[(f(x_0) - \hat{f}(x_0))^2] + Var[\hat{f}(x_0)] + Var[\epsilon]\\
+  &= E[f(x_0) - \hat{f}(x_0)]^2 + ( E[\hat{f}(x_0)^2] - E[\hat{f}(x_0)]^2) + E[\epsilon^2]\\
+  &= E[f(x_0) - \hat{f}(x_0)]^2 + Var[\hat{f}(x_0)] + Var[\epsilon]\\
   &= \text{Squared bias} + \text{Variance of prediction} + \text{Irreducible error}\\ 
 \end{aligned}$$
 
