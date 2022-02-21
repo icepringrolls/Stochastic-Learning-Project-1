@@ -42,10 +42,10 @@ $$\begin{aligned}
   E[(y_0 - \hat{f}(x_0))^2] 
   &= E[(f(x_0) - \hat{f}(x_0) + \epsilon)^2] \\
   &= E[(f(x_0) - \hat{f}(x_0))^2] + 2E[\epsilon(f(x_0) - \hat{f}(x_0))] + E[\epsilon^2] \\
-  &= E[f(x_0)^2 - 2f(x_0)\hat{f}(x_0)] + E[\hat{f}(x_0)^2] + E[\epsilon^2]\\
-  &= E[f(x_0)^2 - 2f(x_0)\hat{f}(x_0)] + E[\hat{f}(x_0)]^2 
-  + ( E[\hat{f}(x_0)^2] - E[\hat{f}(x_0)]^2) + E[\epsilon^2] \\
-  &= E[f(x_0) - \hat{f}(x_0)]^2 + ( E[\hat{f}(x_0)^2] - E[\hat{f}(x_0)]^2) + E[\epsilon^2]\\
+  &= \left \{E[f(x_0)^2 - 2f(x_0)\hat{f}(x_0)] \right \}+ \left \{E[\hat{f}(x_0)^2]\right \}  + E[\epsilon^2]\\
+  &= \left \{E[f(x_0)]^2 - 2E[f(x_0) \hat{f}(x_0)] \mathbf{\ + E[\hat{f}(x_0)]^2}\right \} 
+  + \left \{ E[\hat{f}(x_0)^2] \mathbf{\ - E[\hat{f}(x_0)]^2}\right \} + E[\epsilon^2] \\
+  &= \left \{E[f(x_0) - \hat{f}(x_0)]^2\right \}  + \left\{ E[\hat{f}(x_0)^2] - E[\hat{f}(x_0)]^2\right \} + E[\epsilon^2]\\
   &= E[f(x_0) - \hat{f}(x_0)]^2 + Var[\hat{f}(x_0)] + Var[\epsilon]\\
   &= \text{Squared bias} + \text{Variance of prediction} + \text{Irreducible error}\\ 
 \end{aligned}$$
@@ -104,4 +104,72 @@ head(penguins)
 # Problem 3
 
 # Problem 4
+
+## a)
+$$\begin{matrix}
+i & ii & iii & iv\\ 
+\hline\\
+TRUE & FALSE & FALSE & FALSE\\
+\end{matrix}$$
+
+## b) 
+```{r}
+
+id <- "1chRpybM5cJn4Eow3-_xwDKPKyddL9M2N" # google file ID
+d.chd <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
+```
+
+```{r}
+m <- glm(family="binomial", formula = chd ~ sbp + sex + smoking, data=d.chd)
+d.chd.new <- data.frame(
+  sex=as.integer(c(1)), 
+  sbp = as.numeric(c(150)), 
+  smoking=as.integer(c(0)))
+pred <- predict(m, d.chd.new, type="response")
+pred
+```
+The probability of chd for a non-smoking male with sbp=150 is 10%.
+
+## c)
+### 1)
+```{r}
+set.seed(4268)
+library(boot)
+
+prob <- function(df, index){
+  m <- glm(family="binomial", subset=index, formula = chd ~ sbp + sex + smoking, data=d.chd)
+  return(predict(m, d.chd.new, type="response")) 
+}
+```
+
+### 2)
+```{r}
+B <- 1000
+boot.result <- boot(d.chd, prob, B)
+boot.result
+```
+From the bootstrapping method we observe an estimated standard error of 0.044.
+
+### 3)
+```{r}
+boot.ci(boot.result, 0.95)
+```
+From the bootstrapping method we obtain [0.0107, 0.1843] as
+the first order normal approximation of the 95 % CI.
+
+### 4)
+Since the 95 % CI is wide (nearly approaching zero in the left-hand limit)
+we conclude based on the bootstrapping computations that the conditional
+probability of chd in a non-smoking male with sbp=150 is quite uncertain.
+Plausible values for conditional chd probability thus lie in the interval
+[0.0107, 0.1843].
+The upper limit of .1843 is perhaps most useful as it provides an upper 
+97.5 % confidence bound on estimated conditional chd risk.
+
+## d)
+$$\begin{matrix}
+i & ii & iii & iv\\ 
+\hline\\
+FALSE & FALSE & TRUE & TRUE\\
+\end{matrix}$$
  
