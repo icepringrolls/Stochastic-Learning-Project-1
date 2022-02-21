@@ -7,7 +7,7 @@ output:
   # html_document
   pdf_document
 ---
-  
+
 ```{r setup, include=FALSE}
 library(knitr)
 knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.white=TRUE,prompt=FALSE,
@@ -33,7 +33,6 @@ library("palmerpenguins")
 
 <!--  Etc (load all packages needed). -->
 
-
 # Problem 1
 
 ## a)
@@ -51,15 +50,11 @@ $$\begin{aligned}
 \end{aligned}$$
 
 ## b)
-The squared bias term represents the expected squared deviation between the prediction of the 
-"true" model and the prediction of the fitted model.
-The variance of prediction term represents the degree to which the prediction of
-the fitted model can vary depending on the input. Higher variance of
-prediction means the model can adapt it's prediction to input data to a greater extent
-than a simpler model, implying that the model is more flexible. 
-However, the increased "adaptability" may be unwanted if it leads to overfitting.
+
+The squared bias term represents the expected squared deviation between the prediction of the "true" model and the prediction of the fitted model. The variance of prediction term represents the degree to which the prediction of the fitted model can vary depending on the input. Higher variance of prediction means the model can adapt it's prediction to input data to a greater extent than a simpler model, implying that the model is more flexible. However, the increased "adaptability" may be unwanted if it leads to overfitting.
 
 ## c)
+
 $$\begin{matrix}
 i & ii & iii & iv\\ 
 \hline\\
@@ -67,6 +62,7 @@ TRUE & FALSE & TRUE & FALSE\\
 \end{matrix}$$
 
 ## d)
+
 $$\begin{matrix}
 i & ii & iii & iv\\ 
 \hline\\
@@ -74,6 +70,7 @@ TRUE & FALSE & TRUE & FALSE\\
 \end{matrix}$$
 
 ## e)
+
 ```{r}
 library(matrixcalc)
 mat <- cbind(c(50, 33, 18), c(33, 38, -10), c(18, -10, 72))
@@ -81,7 +78,6 @@ is.positive.semi.definite(mat)
 ```
 
 Answer: iii) 0.76
- 
 
 # Problem 2
 
@@ -93,15 +89,170 @@ data(penguins)
 head(penguins)
 ```
 
-
 ## a)
 
-## b) 
- 
+## b)
+
 ## c)
 
-
 # Problem 3
+Load and prepare data the problem 3
+```{r}
+# Load libraries
+library(tidyverse)
+library(class)
+library(MASS)
+library(palmerpenguins)
+library(dplyr)
+library(caret)
+library(pROC)
+
+# Load penguins data
+Penguins <- penguins
+
+# Add binary variable: if adelie
+Penguins$adelie <- ifelse(Penguins$species == "Adelie", 1, 0)
+
+# Extract just needed variables and remove na
+Penguins_reduced <- Penguins %>% dplyr::select(body_mass_g, flipper_length_mm, adelie) %>% 
+  mutate(body_mass_g = as.numeric(body_mass_g),
+         flipper_length_mm = as.numeric(flipper_length_mm)) %>% 
+  drop_na()
+
+# Set seed for sample extraction
+set.seed(4268)
+
+# Find size of training set
+training_set_size <- floor(0.7 * nrow(Penguins_reduced))
+
+# Split data randomly into train and test
+train_ind <- sample(seq_len(nrow(Penguins_reduced)), size = training_set_size)
+
+train <- Penguins_reduced[train_ind, ]
+test <- Penguins_reduced[-train_ind, ]
+```
+## a)
+# i)
+```{r}
+# Make logistic regression model
+model.LR <- glm(adelie ~ body_mass_g + flipper_length_mm,
+                 family="binomial",
+                 data=train)
+
+# Get classification probabilities
+pred.LR.prob <- model.LR %>% predict(test)
+
+# Classify on test set using 0.5 cutoff
+pred.LR <- ifelse(pred.LR.prob > 0.5, 1, 0)
+```
+# ii)
+```{r}
+# Make quadratic discriminant analysis model
+model.QDA <- qda(adelie ~ body_mass_g + flipper_length_mm,
+                 data=train)
+
+# Get classification probabilities
+pred.QDA.prob<- (model.QDA %>% predict(test))$posterior[0:nrow(test)]
+
+# Classify on test set using 0.5 cutoff
+pred.QDA <- ifelse(pred.QDA.prob > 0.5, 1, 0)
+```
+
+# iii)
+```{r}
+# K-nearest neighbor
+model.KNN <- knn(train = train,
+                 test = test,
+                 cl = train$adelie,
+                 k = 25,
+                 prob = T)
+
+# Get classification probabilities
+pred.KNN.prob <- ifelse(model.KNN == 0, 1 - attributes(model.KNN)$prob, attributes(model.KNN)$prob)
+
+# Classify on test set
+pred.KNN <- model.KNN[0:nrow(test)]
+```
+
+# iv)
+```{r}
+# Calculate specificity and sensitivity
+sensitivity(as.factor(pred.LR), as.factor(test$adelie))
+sensitivity(as.factor(pred.KNN), as.factor(test$adelie))
+sensitivity(as.factor(pred.QDA), as.factor(test$adelie))
+
+specificity(as.factor(pred.LR), as.factor(test$adelie))
+specificity(as.factor(pred.KNN), as.factor(test$adelie))
+specificity(as.factor(pred.QDA), as.factor(test$adelie))
+
+```
+
+## b)
+```{r}
+# ROC for different classifiers
+roc.LR <- roc(test$adelie, pred.LR.prob)
+roc.KNN <- roc(test$adelie, pred.KNN.prob)
+roc.QDA <- roc(test$adelie, pred.QDA.prob)
+
+roc.list <- list(
+  "Logistic regression" = roc.LR,
+  "KNN" = roc.KNN,
+  "QDA" = roc.QDA)
+
+# Plot ROC
+ggroc(roc.list, aes = "col",legacy.axes = TRUE) + 
+  geom_abline() + 
+  theme_classic() +
+  ggtitle("ROC") +
+  labs(x = "1 - Specificity",
+       y = "Sensitivity",
+       col = "Model type")
+
+# AUC for the classifiers
+roc.LR$auc
+roc.KNN$auc
+roc.QDA$auc
+
+
+```
+## c)
+```{r}
+model.LR$coefficients
+```
+Increasing the body mass of penguin with 1000g will result in the following change in the oddds
+
+$$ 
+\begin{equation}
+
+exp(0.0007120 * 1000) = 2.028
+
+\end{equation}
+$$
+The odds increases by a factor of 2.028.
+
+
+## d)
+```{r}
+# Get all data, from both test and training
+penguins.pred.all <- Penguins_reduced %>% dplyr::select(-adelie)
+
+# Classify on both test and training data using LR model
+pred.all <- ifelse(model.LR %>% predict(penguins.pred.all) > 0.5, 1, 0)
+
+penguins.pred.all <- Penguins_reduced %>% dplyr::mutate(pred = pred.all)
+
+# Plot result
+ggplot(penguins.pred.all, aes(x=flipper_length_mm, y=body_mass_g)) + 
+  ggtitle("Classification of penguins") +
+  geom_point(aes(col = as.factor(adelie), shape = as.factor(pred))) + 
+  labs(x = "Flipper length [mm]",
+       y = "Body mass [g]",
+       col = "True class",
+       shape = "Predicted class") + 
+  scale_colour_discrete(labels=c("Not Adelie", "Adelie")) +
+  scale_shape_discrete(labels=c("Not Adelie", "Adelie"))
+```
+
 
 # Problem 4
 
@@ -172,4 +323,3 @@ i & ii & iii & iv\\
 \hline\\
 FALSE & FALSE & TRUE & TRUE\\
 \end{matrix}$$
- 
