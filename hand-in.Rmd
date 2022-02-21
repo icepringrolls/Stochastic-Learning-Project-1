@@ -186,11 +186,12 @@ Basel's model
 penguin.model.basel <- lm(body_mass_g ~ flipper_length_mm + bill_depth_mm*species, 
                   data = Penguins)
 ```
-
+We assess the significance of the sex covariate using an F-test:
 ```{r}
 #F-test between initial model and Basel's model
 anova(penguin.model.initial, penguin.model.basel)
 ```
+
 We see from the p-value (< 2.2e-16) that the sex covariate appears 
 to be highly significant , and that Basils model got worse 
 (SSE increased by 7736349) by excluding it from the model.
@@ -207,8 +208,9 @@ penguin.model.improved <- lm(body_mass_g ~
                              data = Penguins)
 summary(penguin.model.improved)$coefficient
 ```
-We see that all coefficients in the simpler model appear significant with a p-value below 0.05.
 
+We see that all coefficients in the simpler model appear significant with a p-value below 0.05.
+We now add interactions between bill depth and species:
 ```{r}
 
 # Fit improved model wit interaction between bill depth and species
@@ -220,31 +222,29 @@ penguin.model.improved2 <- lm(body_mass_g ~
                               + sex, 
                               data = Penguins)
 summary(penguin.model.improved2)$coefficient
-
 ```
+
 The coefficient for the interaction between bill_depth and speciesGentoo 
 appears to be insignificant with p-value > 0.5. 
+We run an F-test to assess significance of the interactions:
 ```{r}
 # compare models:
 anova(penguin.model.improved, penguin.model.improved2)
 ```
+
 The F-test indicates that the interactions may be significant with a p-value of 0.0072.
-However due to the large p-value for interaction coefficient mentioned before, 
+However due to the large p-value for the interaction coefficient mentioned before, 
 we elect to keep the simpler model.
 We conduct an F-test to compare our improved model with the initial model:
 ```{r}
 #F-Test between improved model and initial model 
 anova(penguin.model.improved, penguin.model.initial)
 ```
+
 Although the F-test suggests an insignificant difference in performance for the two models,
 we still prefer our model since it does not include interaction terms.
-A summary of the improved model is given below:
-```{r}
-summary(penguin.model.improved)
-```
 
-The final model is given by the following equations.    
-
+The final model is given by the following equations:
 $$
 \begin{aligned}
   \hat{y}_{adelie} &= \hat\beta_0 + \hat\beta_{flipper\_length} x_{flipper\_length} +      \hat\beta_{bill\_depth} x_{bill\_depth} + \hat\beta_{bill\_length} x_{bill\_length}\\
@@ -252,6 +252,7 @@ $$
 \hat{y}_{gentoo} &= \hat\beta_0 + \hat\beta_{flipper\_length} x_{flipper\_length} + \hat\beta_{bill\_length} x_{bill\_length} + \hat\beta_{bill\_depth} x_{bill\_depth} +\hat\beta_{gentoo} 
 \end{aligned}
 $$
+
 A Tukey-Anscombe plot to evaluate the fit of the model is generated below. No clear correlation can be seen between the residuals and fitted values, indicating that the expected value of the residual is 0. The variance of residuals does not appear to be significantly different for the fitted values either, suggesting heteroskedasticity is not present. 
 ```{r fig.dim = c(5,5)}
 library(sfsmisc)
@@ -326,7 +327,7 @@ model.QDA <- qda(adelie ~ body_mass_g + flipper_length_mm,
 pred.QDA.prob<- (model.QDA %>% predict(test))$posterior[0:nrow(test)]
 
 # Classify on test set using 0.5 cutoff
-pred.QDA <- ifelse(pred.QDA.prob > 0.5, 1, 0)
+pred.QDA <- ifelse(pred.QDA.prob > 0.5, 0, 1)
 ```
 
 # iii)
@@ -404,7 +405,7 @@ The AUC, or area under the curve, is just the area under the ROC curve and provi
 
 # iii)
 
-We would say the logistic regression model is the most interpretable model. This model provides easy to understand betas telling about the realtionship between the body mass and flipper length and if the penguin is Adelie or not. The two other models does not provide the same information about the data.
+We would say the logistic regression model is the most interpretable model. This model provides easy to understand betas which provide information about the relationship between the body mass and flipper length for predicting if the penguin is Adelie or not. The two other models does not provide the same information about the data.
 
 ## c)
 
@@ -449,7 +450,7 @@ ggplot(penguins.pred.all, aes(x=flipper_length_mm, y=body_mass_g)) +
 (i) True. The process for validation set approach is only necessary to be repeated once but 10 times in 10-fold CV.
 (ii)False. LOOCV has the highest variance as the datasets used between training are highly correlated and differ only by one observation which can lead to high variance between completely new datasets.
 (iii)False. In the validation set-approach the data is split randomly into 2 equal sets with 1 set being the training set and the other being the validation set. In the 2-fold CV the data is again randomly split into 2 equal parts but each data set take turn being the training and validation set.
-(iv) False. LOOCV is the most computationally expensive way to do cross-validation. 
+(iv) False. LOOCV is the most computationally expensive way to do cross-validation and is the same as N-fold validation. 
 
 ## b) 
 ```{r}
@@ -491,7 +492,7 @@ From the bootstrapping method we observe an estimated standard error of 0.044.
 
 ### 3)
 ```{r}
-boot.ci(boot.result, 0.95)
+boot.ci(boot.result, 0.95, type = "all")
 ```
 From the bootstrapping method we obtain [0.0107, 0.1843] as
 the first order normal approximation of the 95 % CI.
