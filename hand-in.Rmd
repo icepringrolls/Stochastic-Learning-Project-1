@@ -391,7 +391,7 @@ ggplot(penguins.pred.all, aes(x=flipper_length_mm, y=body_mass_g)) +
 (i) True. The process for validation set approach is only necessary to be repeated once but 10 times in 10-fold CV.
 (ii)False. LOOCV has the highest variance as the datasets used between training are highly correlated and differ only by one observation which can lead to high variance between completely new datasets.
 (iii)False. In the validation set-approach the data is split randomly into 2 equal sets with 1 set being the training set and the other being the validation set. In the 2-fold CV the data is again randomly split into 2 equal parts but each data set take turn being the training and validation set.
-(iv) False. LOOCV is the most computationally expensive way to do cross-validation. 
+(iv) False. LOOCV is the most computationally expensive way to do cross-validation and is the same as N-fold validation. 
 
 ## b) 
 ```{r}
@@ -433,7 +433,7 @@ From the bootstrapping method we observe an estimated standard error of 0.044.
 
 ### 3)
 ```{r}
-boot.ci(boot.result, 0.95)
+boot.ci(boot.result, 0.95, type = "all")
 ```
 From the bootstrapping method we obtain [0.0107, 0.1843] as
 the first order normal approximation of the 95 % CI.
