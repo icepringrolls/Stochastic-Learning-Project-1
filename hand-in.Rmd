@@ -36,8 +36,8 @@ library("palmerpenguins")
 # Problem 1
 
 ## a)
-The expected MSE on the test set is given by:
-$$\begin{aligned}
+
+The expected MSE on the test set is given by: $$\begin{aligned}
   E[(y_0 - \hat{f}(x_0))^2] 
   &= E[(f(x_0) - \hat{f}(x_0) + \epsilon)^2] \\
   &= E[(f(x_0) - \hat{f}(x_0))^2] + 2E[\epsilon(f(x_0) - \hat{f}(x_0))] + E[\epsilon^2] \\
@@ -91,13 +91,12 @@ head(penguins)
 
 ## a)
 
-  1)Basel have understood the meaning of p-values. He has excluded the sex covariate as he mentioned that it has the smallest p-value. However, a small p-value indicates that the  sex covariate has significant importance in determine the body mass of penguins. A F-test should be conducted before the choice of omitting the sex covariate.   
-  2)The body  mass of penguins has been described to be dependent on the species of the penguin. This done despite the fact that species have the highest p-value in the original model. This is evident by an extremely high p-value for the species coefficients in the final model which suggests that there is a high probability for observing the null hypothesis, where there is no relationship between species and body mass.A F-test can be conducted to determine if species should be omitted. 
-  3)Basel concludes that chinstrap penguins have the largest body mass from the fact that the dummy variable for chinstrap penguins have the largest value. However he does not consider that the interaction effect between bill depth and Chinstrap is the only negative term while the others are positive. The final body mass for chinstraps can therefore be lower than the other species due to this interaction term. Correlation between bill depth and species are not considered as well.
-   
+1)Basel have understood the meaning of p-values. He has excluded the sex covariate as he mentioned that it has the smallest p-value. However, a small p-value indicates that the sex covariate has significant importance in determine the body mass of penguins. A F-test should be conducted before the choice of omitting the sex covariate.\
+2)The body mass of penguins has been described to be dependent on the species of the penguin. This done despite the fact that species have the highest p-value in the original model. This is evident by an extremely high p-value for the species coefficients in the final model which suggests that there is a high probability for observing the null hypothesis, where there is no relationship between species and body mass.A F-test can be conducted to determine if species should be omitted. 3)Basel concludes that chinstrap penguins have the largest body mass from the fact that the dummy variable for chinstrap penguins have the largest value. However he does not consider that the interaction effect between bill depth and Chinstrap is the only negative term while the others are positive. The final body mass for chinstraps can therefore be lower than the other species due to this interaction term. Correlation between bill depth and species are not considered as well.
 
 ## b)
-```{r, echo = FALSE, fig.dim = c(10,10)}
+
+```{r, echo = TRUE, fig.dim = c(10,10)}
 ############## =^._.^=  ~~~BASIL'S CODE~~~  =^._.^= ############## 
 #install.packages("palmerpenguins")  # Run if you haven't installed this before.
 
@@ -119,7 +118,8 @@ ggmatrix(
     ncol = gpairs_sex$ncol,
     xAxisLabels = gpairs_sex$xAxisLabels,
     yAxisLabels = primary_var,
-    title = "Body Mass to sex correlations"
+    title = "Body Mass to sex correlations",
+  
 )
 gpairs_species <- ggpairs(Penguins, mapping = ggplot2::aes(colour = species))
 primary_var <- "body_mass_g"
@@ -134,15 +134,14 @@ ggmatrix(
     title = "Body Mass to species correlations"
 )
 ```
+
 The plots above show the factors for body mass first separated by sex and then by species. From the body mass to sex correlations plots, it can be seen that in general, male penguins have a higher body mass than females. Sex covariate should therefore be considered. From the species plot, it can be seen that Gentoo penguins in general have a higher body mass and therefore Basil's conclusion that Chinstrap penguins have the highest mass is incorrect. THe omission of bill length might also not be correct as there appears to be a correlation between bill length and body mass. Finally, Basel might not be right in his assessment that there is an interaction between the covariates species and bill depth. The slopes of the trend line between bill depth and body mass appears to remain constant regardless of the species. From the plots, there does not appear to be any interaction terms between sex and any other covariates.
 
 Basel should probably have first get a rough estimation of the importance of various covariates for body mass by generating these plots to get an overall picture at least graphically
 
-
-
 ## c)
 
-```{r}
+```{r, echo = TRUE}
 ############## =^._.^=  ~~~BASIL'S CODE~~~  =^._.^= ############## 
 #install.packages("palmerpenguins")  # Run if you haven't installed this before.
 
@@ -188,7 +187,7 @@ confint(penguin.model.mine)
 
 ```
 
-In the initial model, a linear regression with body mass as the response, and flipper length, bill depth, bill length, species and sex as covariates, as well as an interaction effect between bill depth and species. An F-test was conduceted between the original model with all covariates and basel's model resulting in a F-value of 34.5 and Pr(>F) of 1.049e-08. This indicates that the covariate terms that Basel have eliminated were actually quite important and should be included. Looking back at the original model, the interaction term between species and bill depth has the highest p-value and therefore a model without the interaction term was considered. This theory was further evidenced by plots generated in part (b).An F-test was conducted to check the importance of the interaction term between billdepth and species. This gave a F-value of 5.1625 and a Pr(>F) of 0.006193. Though this might mean that the interaction term between billdepth and species have some significance, it is the least significant and have been chosen to be omitted for simplicity. The final model without the interaction term have low p-values for all included covariates. Based on the dummy variable for Gentoo penguins being the largest (657), and no species interaction term the Gentoo penguins have in general the largest mass. However this is done assuming that the other covariates, bill_depth and flipper_length, are independent of species, which might not the case. The final model is therefore given by the equations.    
+In the initial model, a linear regression with body mass as the response, and flipper length, bill depth, bill length, species and sex as covariates, as well as an interaction effect between bill depth and species. An F-test was conduceted between the original model with all covariates and basel's model resulting in a F-value of 34.5 and Pr(\>F) of 1.049e-08. This indicates that the covariate terms that Basel have eliminated were actually quite important and should be included. Looking back at the original model, the interaction term between species and bill depth has the highest p-value and therefore a model without the interaction term was considered. This theory was further evidenced by plots generated in part (b).An F-test was conducted to check the importance of the interaction term between billdepth and species. This gave a F-value of 5.1625 and a Pr(\>F) of 0.006193. Though this might mean that the interaction term between billdepth and species have some significance, it is the least significant and have been chosen to be omitted for simplicity. The final model without the interaction term have low p-values for all included covariates. Based on the dummy variable for Gentoo penguins being the largest (657), and no species interaction term the Gentoo penguins have in general the largest mass. However this is done assuming that the other covariates, bill_depth and flipper_length, are independent of species, which might not the case. The final model is therefore given by the equations.
 
 $$
 \begin{aligned}
@@ -196,19 +195,17 @@ $$
   \hat{y}_{chinstrap} &= \hat\beta_0 + \hat\beta_{flipper\_length} x_{flipper\_length} + \hat\beta_{bill\_length} x_{bill\_length} +\hat\beta_{bill\_depth} x_{bill\_depth} +\hat\beta_{chinstrap} \\
 \hat{y}_{gentoo} &= \hat\beta_0 + \hat\beta_{flipper\_length} x_{flipper\_length} + \hat\beta_{bill\_length} x_{bill\_length} + \hat\beta_{bill\_depth} x_{bill\_depth} +\hat\beta_{gentoo} 
 \end{aligned}
-$$
-The 95% confidence window for each of the covariate coefficient is also given above. 
-
+$$ The 95% confidence window for each of the covariate coefficient is also given above.
 
 A Tukey-Anscombe plot to evaluate the fit of the model is generated below. No clear correlation can be seen between the residuals and fitted values, indicating that the expected value of the residual is 0 and that they all have the same variance.
-```{r fig.dim = c(10,10)}
+
+```{r,fig.dim = c(10,10), echo =True}
 library(sfsmisc)
 TA.plot( penguin.model.mine, fit = fitted(penguin.model.mine), res = residuals(penguin.model.mine), labels = "*" )
 
 
 
 ```
-
 
 # Problem 3
 
@@ -399,12 +396,12 @@ ggplot(penguins.pred.all, aes(x=flipper_length_mm, y=body_mass_g)) +
 # Problem 4
 
 ## a)
-(i) True. The process for validation set approach is only necessary to be repeated once but 10 times in 10-fold CV.
-(ii)False. LOOCV has the highest variance as the datasets used between training are highly correlated and differ only by one observation which can lead to high variance between completely new datasets.
-(iii)False. In the validation set-approach the data is split randomly into 2 equal sets with 1 set being the training set and the other being the validation set. In the 2-fold CV the data is again randomly split into 2 equal parts but each data set take turn being the training and validation set.
-(iv) False. LOOCV is the most computationally expensive way to do cross-validation. 
 
-## b) 
+(i) True. The process for validation set approach is only necessary to be repeated once but 10 times in 10-fold CV. (ii)False. LOOCV has the highest variance as the datasets used between training are highly correlated and differ only by one observation which can lead to high variance between completely new datasets. (iii)False. In the validation set-approach the data is split randomly into 2 equal sets with 1 set being the training set and the other being the validation set. In the 2-fold CV the data is again randomly split into 2 equal parts but each data set take turn being the training and validation set.
+(ii) False. LOOCV is the most computationally expensive way to do cross-validation.
+
+## b)
+
 ```{r}
 
 id <- "1chRpybM5cJn4Eow3-_xwDKPKyddL9M2N" # google file ID
@@ -420,10 +417,13 @@ d.chd.new <- data.frame(
 pred <- predict(m, d.chd.new, type="response")
 pred
 ```
+
 The probability of chd for a non-smoking male with sbp=150 is 10%.
 
 ## c)
+
 ### 1)
+
 ```{r}
 set.seed(4268)
 library(boot)
@@ -435,30 +435,29 @@ prob <- function(df, index){
 ```
 
 ### 2)
+
 ```{r}
 B <- 1000
 boot.result <- boot(d.chd, prob, B)
 boot.result
 ```
+
 From the bootstrapping method we observe an estimated standard error of 0.044.
 
 ### 3)
+
 ```{r}
 boot.ci(boot.result, 0.95)
 ```
-From the bootstrapping method we obtain [0.0107, 0.1843] as
-the first order normal approximation of the 95 % CI.
+
+From the bootstrapping method we obtain [0.0107, 0.1843] as the first order normal approximation of the 95 % CI.
 
 ### 4)
-Since the 95 % CI is wide (nearly approaching zero in the left-hand limit)
-we conclude based on the bootstrapping computations that the conditional
-probability of chd in a non-smoking male with sbp=150 is quite uncertain.
-Plausible values for conditional chd probability thus lie in the interval
-[0.0107, 0.1843].
-The upper limit of .1843 is perhaps most useful as it provides an upper 
-97.5 % confidence bound on estimated conditional chd risk.
+
+Since the 95 % CI is wide (nearly approaching zero in the left-hand limit) we conclude based on the bootstrapping computations that the conditional probability of chd in a non-smoking male with sbp=150 is quite uncertain. Plausible values for conditional chd probability thus lie in the interval [0.0107, 0.1843]. The upper limit of .1843 is perhaps most useful as it provides an upper 97.5 % confidence bound on estimated conditional chd risk.
 
 ## d)
+
 $$\begin{matrix}
 i & ii & iii & iv\\ 
 \hline\\
