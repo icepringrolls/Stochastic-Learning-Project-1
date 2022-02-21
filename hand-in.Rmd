@@ -95,37 +95,58 @@ library(palmerpenguins) # Contains the data set "penguins".
 data(penguins)
 # Remove island, and year variable, as we won't use those.
 Penguins <- na.omit(subset(penguins, select = -c(island, year)))
-boxplot(body_mass_g ~ sex, data=Penguins)
+```
+
+
+```{r}
+library(patchwork)
+boxplot1 <- ggplot(data=Penguins, mapping=aes(x=sex, y=body_mass_g)) + geom_boxplot() 
+boxplot2 <- ggplot(data=Penguins, mapping=aes(x=species, y=body_mass_g)) + geom_boxplot() 
+boxplot1 / boxplot2
 ```
 Judging from the box-plot above, the sex factor appears to be significant, 
 with males having a larger average body mass than females. 
-
-```{r}
-boxplot(body_mass_g ~ species, data=Penguins)
-```
 Contrary to Basel's claim, we see that Gentoo is the species with the largest average body mass, not Chinstrap.
-
 ## c)
 Original model
 ```{r}
 # Fit the model as specified in advance based on "expert" knowledge:
 penguin.model.initial <- lm(body_mass_g ~ flipper_length_mm  + sex + bill_depth_mm * species, 
                     data = Penguins)
-summary(penguin.model.initial)
 ```
 Basel's model
 ```{r}
 penguin.model.basel <- lm(body_mass_g ~ flipper_length_mm + bill_depth_mm*species, 
                   data = Penguins)
-summary(penguin.model.basel)
 ```
-Improved model
+Improved model:
+We create two models: One which includes all first order terms (no interactions),
+and one model with interactions between bill_depth and species, as in the initial
+model. We the run an F-test to determine whether the more complex model improves on
+the simpler model:
 ```{r}
-# Fit model with sex
-penguin.model.improved <- lm(body_mass_g ~ flipper_length_mm + species + bill_length_mm + bill_depth_mm + sex, data = Penguins)
-summary(penguin.model.improved)
-```
+# Fit improved model without interactions
+penguin.model.improved0 <- lm(body_mass_g ~ 
+                               flipper_length_mm 
+                             + bill_length_mm
+                             + bill_depth_mm 
+                             + species
+                             + sex, 
+                             data = Penguins)
 
+# Fit improved model wit interaction between bill depth and species
+penguin.model.improved <- lm(body_mass_g ~ 
+                                flipper_length_mm
+                              + bill_length_mm
+                              + bill_depth_mm
+                              * species
+                              + sex, 
+                              data = Penguins)
+# compare models:
+anova(penguin.model.improved0, penguin.model.improved)
+```
+The F-test indicates that the interactions may be significant.
+However, since the 
 ```{r}
 #F-test between initial model and Basel's model
 anova(penguin.model.initial, penguin.model.basel)
@@ -133,10 +154,14 @@ anova(penguin.model.initial, penguin.model.basel)
 Wee see from the p-value (< 2.2e-16) that the sex covariate appears 
 to be highly significant , and that Basil's model got worse 
 (SSE increased by 7736349) by excluding it from the model.
+
+Finally we conduct an F-test to compare our improved model with the initial model:
 ```{r}
-#F-Test between initial model and 
+#F-Test between improved model and initial model 
 anova(penguin.model.improved, penguin.model.initial)
 ```
+With an F-test resulting in a p-value of 0.006, we conclude that our model is
+significantly better than both the initial model and Basel's model.
 
 ```{r}
 # Fit model without sex
@@ -158,7 +183,10 @@ $$
 \hat{y}_{gentoo} &= \hat\beta_0 + \hat\beta_{flipper\_length} x_{flipper\_length} + \hat\beta_{bill\_length} x_{bill\_length} + \hat\beta_{bill\_depth} x_{bill\_depth} +\hat\beta_{gentoo} 
 \end{aligned}
 $$
-The 95% confidence window for each of the covariate coefficient is also given below. 
+
+
+The 95% confidence window for each of the covariate coefficient is also given below.
+
 #95% confidence interval of our model
 ```{r}
 confint(penguin.model.improved)
