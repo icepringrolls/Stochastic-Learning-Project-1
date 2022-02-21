@@ -108,65 +108,142 @@ Judging from the box-plot above, the sex factor appears to be significant,
 with males having a larger average body mass than females. 
 Contrary to Basel's claim, we see that Gentoo is the species with the largest average body mass, not Chinstrap.
 ## c)
-Original model
+
+```{r}
+library(GGally)
+library(patchwork)
+
+disc_plots <- function(){
+  gpairs <- ggpairs(Penguins, mapping = aes(colour = sex))
+  mass_pos <- match("body_mass_g", gpairs$xAxisLabels)
+  getPlot(gpairs, i=mass_pos, j=1)
+}
+
+cont_plots <- function(colour){
+  if(colour=="species"){
+    gpairs <- ggpairs(Penguins, mapping = aes(colour = species))
+  } else {
+    gpairs <- ggpairs(Penguins, mapping = aes(colour = sex))
+  }
+  ind <- function(var_name){
+    match(var_name, gpairs$xAxisLabels)
+  }
+  cont_vars <- c("bill_length_mm", "bill_depth_mm", "flipper_length_mm")
+  cont_inds <- sapply(cont_vars, function(var) ind(var))
+  mass_pos <- match("body_mass_g", gpairs$xAxisLabels)
+  plots <- lapply(cont_inds, function(j) getPlot(gpairs, i = mass_pos, j = j))
+  ggmatrix(
+      plots,
+      byrow=TRUE,
+      nrow = 1,
+      ncol = length(cont_inds),
+      xAxisLabels = c(cont_vars),
+      yAxisLabels = c("body_mass_g"),
+      title = "Scatter plots",
+      showStrips = TRUE,
+      legend=3,
+      gg=theme(axis.text=element_text(size=12))
+  )
+}
+
+```
+Plots of body-mass distributions for the different species and sexes:
+```{r fig.dim = c(6,2)}
+disc_plots()
+```
+From the plot above we observe that males on average have a larger body mass than females.
+However, the most significant difference in body mass is found between the Gentoo species and
+the two other species.
+
+Scatter plot for each continuous variable categorized by species:
+```{r fig.dim = c(6,2)}
+cont_plots("species")
+```
+
+Scatter plot for each continuous variable categorized by sex:
+
+```{r fig.dim = c(6,2)}
+cont_plots("sex")
+```
+We observe from the two scatter plots that the most significant differences in
+attributes are found between different species, not the sexes.
+However, the sex scatter plot indicates that males tend to score higher 
+in most attributes as the clusters are centered more upward and to the left than
+females in the plot.
+That being said, we see no clear evidence that the regression coefficient
+for any of the 3 continuous variables differ significantly among species or sexes. 
+This motivates us to disregard interactions.
+
+Initial model
 ```{r}
 # Fit the model as specified in advance based on "expert" knowledge:
 penguin.model.initial <- lm(body_mass_g ~ flipper_length_mm  + sex + bill_depth_mm * species, 
                     data = Penguins)
 ```
+
 Basel's model
 ```{r}
 penguin.model.basel <- lm(body_mass_g ~ flipper_length_mm + bill_depth_mm*species, 
                   data = Penguins)
 ```
-Improved model:
-We create two models: One which includes all first order terms (no interactions),
-and one model with interactions between bill_depth and species, as in the initial
-model. We the run an F-test to determine whether the more complex model improves on
-the simpler model:
+
+```{r}
+#F-test between initial model and Basel's model
+anova(penguin.model.initial, penguin.model.basel)
+```
+We see from the p-value (< 2.2e-16) that the sex covariate appears 
+to be highly significant , and that Basils model got worse 
+(SSE increased by 7736349) by excluding it from the model.
+
+We begin by creating a simple model
 ```{r}
 # Fit improved model without interactions
-penguin.model.improved0 <- lm(body_mass_g ~ 
+penguin.model.improved <- lm(body_mass_g ~ 
                                flipper_length_mm 
                              + bill_length_mm
                              + bill_depth_mm 
                              + species
                              + sex, 
                              data = Penguins)
+summary(penguin.model.improved)$coefficient
+```
+We see that all coefficients in the simpler model appear significant with a p-value below 0.05.
+
+```{r}
 
 # Fit improved model wit interaction between bill depth and species
-penguin.model.improved <- lm(body_mass_g ~ 
+penguin.model.improved2 <- lm(body_mass_g ~ 
                                 flipper_length_mm
                               + bill_length_mm
                               + bill_depth_mm
                               * species
                               + sex, 
                               data = Penguins)
-# compare models:
-anova(penguin.model.improved0, penguin.model.improved)
-```
-The F-test indicates that the interactions may be significant.
-However, since the 
-```{r}
-#F-test between initial model and Basel's model
-anova(penguin.model.initial, penguin.model.basel)
-```
-Wee see from the p-value (< 2.2e-16) that the sex covariate appears 
-to be highly significant , and that Basils model got worse 
-(SSE increased by 7736349) by excluding it from the model.
+summary(penguin.model.improved2)$coefficient
 
-Finally we conduct an F-test to compare our improved model with the initial model:
+```
+The coefficient for the interaction between bill_depth and speciesGentoo 
+appears to be insignificant with p-value > 0.5. 
+```{r}
+# compare models:
+anova(penguin.model.improved, penguin.model.improved2)
+```
+The F-test indicates that the interactions may be significant with a p-value of 0.0072.
+However due to the large p-value for interaction coefficient mentioned before, 
+we elect to keep the simpler model.
+We conduct an F-test to compare our improved model with the initial model:
 ```{r}
 #F-Test between improved model and initial model 
 anova(penguin.model.improved, penguin.model.initial)
 ```
-With an F-test resulting in a p-value of 0.006, we conclude that our model is
-significantly better than both the initial model and Basel's model.
+Although the F-test suggests an insignificant difference in performance for the two models,
+we still prefer our model since it does not include interaction terms.
+A summary of the improved model is given below:
 ```{r}
-confint(penguin.model.improved)
+summary(penguin.model.improved)
 ```
 
-An F-test was conducted to check the importance of the interaction term between billdepth and species. This gave a F-value of 5.1625 and a Pr(>F) of 0.006193. Though this might mean that the interaction term between billdepth and species have some significance, it is the least significant and have been chosen to be omitted for simplicity. The final model without the interaction term have low p-values for all included covariates. Based on the dummy variable for Gentoo penguins being the largest (657), and no species interaction term the Gentoo penguins have in general the largest mass. However this is done assuming that the other covariates, bill_depth and flipper_length, are independent of species, which might not the case. The final model is therefore given by the equations.    
+The final model is given by the following equations.    
 
 $$
 \begin{aligned}
@@ -175,16 +252,10 @@ $$
 \hat{y}_{gentoo} &= \hat\beta_0 + \hat\beta_{flipper\_length} x_{flipper\_length} + \hat\beta_{bill\_length} x_{bill\_length} + \hat\beta_{bill\_depth} x_{bill\_depth} +\hat\beta_{gentoo} 
 \end{aligned}
 $$
-The 95% confidence window for each of the covariate coefficient is also given above. 
-
-
-A Tukey-Anscombe plot to evaluate the fit of the model is generated below. No clear correlation can be seen between the residuals and fitted values, indicating that the expected value of the residual is 0 and that they all have the same variance.
-```{r fig.dim = c(10,10)}
+A Tukey-Anscombe plot to evaluate the fit of the model is generated below. No clear correlation can be seen between the residuals and fitted values, indicating that the expected value of the residual is 0. The variance of residuals does not appear to be significantly different for the fitted values either, suggesting heteroskedasticity is not present. 
+```{r fig.dim = c(5,5)}
 library(sfsmisc)
 TA.plot( penguin.model.improved, fit = fitted(penguin.model.improved), res = residuals(penguin.model.improved), labels = "*" )
-
-
-
 ```
 
 
