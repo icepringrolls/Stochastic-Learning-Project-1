@@ -91,12 +91,129 @@ head(penguins)
 
 ## a)
 
+  1)Basel have understood the meaning of p-values. He has excluded the sex covariate as he mentioned that it has the smallest p-value. However, a small p-value indicates that the  sex covariate has significant importance in determine the body mass of penguins. A F-test should be conducted before the choice of omitting the sex covariate.   
+  2)The body  mass of penguins has been described to be dependent on the species of the penguin. This done despite the fact that species have the highest p-value in the original model. This is evident by an extremely high p-value for the species coefficients in the final model which suggests that there is a high probability for observing the null hypothesis, where there is no relationship between species and body mass.A F-test can be conducted to determine if species should be omitted. 
+  3)Basel concludes that chinstrap penguins have the largest body mass from the fact that the dummy variable for chinstrap penguins have the largest value. However he does not consider that the interaction effect between bill depth and Chinstrap is the only negative term while the others are positive. The final body mass for chinstraps can therefore be lower than the other species due to this interaction term. Correlation between bill depth and species are not considered as well.
+   
+
 ## b)
+```{r, echo = FALSE, fig.dim = c(10,10)}
+############## =^._.^=  ~~~BASIL'S CODE~~~  =^._.^= ############## 
+#install.packages("palmerpenguins")  # Run if you haven't installed this before.
+
+
+library(palmerpenguins) # Contains the data set "penguins".
+data(penguins)
+
+# Remove island, and year variable, as we won't use those.
+Penguins <- subset(penguins, select = -c(island, year))
+
+library(GGally)
+gpairs_sex <- ggpairs(Penguins, mapping = ggplot2::aes(colour = sex))
+primary_var <- "body_mass_g"
+pvar_pos <- match(primary_var, gpairs_sex$xAxisLabels)
+plots <- lapply(1:gpairs_sex$ncol, function(j) getPlot(gpairs_sex, i = pvar_pos, j = j))
+ggmatrix(
+    plots,
+    nrow = 1,
+    ncol = gpairs_sex$ncol,
+    xAxisLabels = gpairs_sex$xAxisLabels,
+    yAxisLabels = primary_var,
+    title = "Body Mass to sex correlations"
+)
+gpairs_species <- ggpairs(Penguins, mapping = ggplot2::aes(colour = species))
+primary_var <- "body_mass_g"
+pvar_pos <- match(primary_var, gpairs_species$xAxisLabels)
+plots <- lapply(1:gpairs_species$ncol, function(j) getPlot(gpairs_species, i = pvar_pos, j = j))
+ggmatrix(
+    plots,
+    nrow = 1,
+    ncol = gpairs_species$ncol,
+    xAxisLabels = gpairs_species$xAxisLabels,
+    yAxisLabels = primary_var,
+    title = "Body Mass to species correlations"
+)
+```
+The plots above show the factors for body mass first separated by sex and then by species. From the body mass to sex correlations plots, it can be seen that in general, male penguins have a higher body mass than females. Sex covariate should therefore be considered. From the species plot, it can be seen that Gentoo penguins in general have a higher body mass and therefore Basil's conclusion that Chinstrap penguins have the highest mass is incorrect. THe omission of bill length might also not be correct as there appears to be a correlation between bill length and body mass. Finally, Basel might not be right in his assessment that there is an interaction between the covariates species and bill depth. The slopes of the trend line between bill depth and body mass appears to remain constant regardless of the species. From the plots, there does not appear to be any interaction terms between sex and any other covariates.
+
+Basel should probably have first get a rough estimation of the importance of various covariates for body mass by generating these plots to get an overall picture at least graphically
+
+
 
 ## c)
 
+```{r}
+############## =^._.^=  ~~~BASIL'S CODE~~~  =^._.^= ############## 
+#install.packages("palmerpenguins")  # Run if you haven't installed this before.
+
+
+library(palmerpenguins) # Contains the data set "penguins".
+data(penguins)
+
+# Remove island, and year variable, as we won't use those.
+Penguins <- subset(penguins, select = -c(island, year))
+
+# Fit the model as specified in advance based on expert knowledge:
+penguin.model.initial <- lm(body_mass_g ~ flipper_length_mm  + bill_length_mm + bill_depth_mm*species, 
+                    data = Penguins)
+
+
+penguin.model.basel <- lm(body_mass_g ~ flipper_length_mm + bill_depth_mm*species, 
+                  data = Penguins)
+
+penguin.model.mine <- lm(body_mass_g ~ flipper_length_mm  + bill_length_mm + species +  bill_depth_mm, data = Penguins)
+
+
+# Look at the model coefficients
+print("Original model")
+summary(penguin.model.initial)$coefficients
+print("Basel's model")
+summary(penguin.model.basel)$coefficients
+print("Final model")
+summary(penguin.model.mine)$coefficients
+
+# Fit final model without sex
+summary(penguin.model.mine)
+
+#F-test between initial model and Basel's final model
+anova(penguin.model.basel,penguin.model.mine)
+
+#F-test between initial model and our final model
+anova(penguin.model.initial,penguin.model.mine)
+
+#95% confidence interval of our model
+confint(penguin.model.mine)
+
+
+
+```
+
+In the initial model, a linear regression with body mass as the response, and flipper length, bill depth, bill length, species and sex as covariates, as well as an interaction effect between bill depth and species. An F-test was conduceted between the original model with all covariates and basel's model resulting in a F-value of 34.5 and Pr(>F) of 1.049e-08. This indicates that the covariate terms that Basel have eliminated were actually quite important and should be included. Looking back at the original model, the interaction term between species and bill depth has the highest p-value and therefore a model without the interaction term was considered. This theory was further evidenced by plots generated in part (b).An F-test was conducted to check the importance of the interaction term between billdepth and species. This gave a F-value of 5.1625 and a Pr(>F) of 0.006193. Though this might mean that the interaction term between billdepth and species have some significance, it is the least significant and have been chosen to be omitted for simplicity. The final model without the interaction term have low p-values for all included covariates. Based on the dummy variable for Gentoo penguins being the largest (657), and no species interaction term the Gentoo penguins have in general the largest mass. However this is done assuming that the other covariates, bill_depth and flipper_length, are independent of species, which might not the case. The final model is therefore given by the equations.    
+
+$$
+\begin{aligned}
+  \hat{y}_{adelie} &= \hat\beta_0 + \hat\beta_{flipper\_length} x_{flipper\_length} +      \hat\beta_{bill\_depth} x_{bill\_depth} + \hat\beta_{bill\_length} x_{bill\_length}\\
+  \hat{y}_{chinstrap} &= \hat\beta_0 + \hat\beta_{flipper\_length} x_{flipper\_length} + \hat\beta_{bill\_length} x_{bill\_length} +\hat\beta_{bill\_depth} x_{bill\_depth} +\hat\beta_{chinstrap} \\
+\hat{y}_{gentoo} &= \hat\beta_0 + \hat\beta_{flipper\_length} x_{flipper\_length} + \hat\beta_{bill\_length} x_{bill\_length} + \hat\beta_{bill\_depth} x_{bill\_depth} +\hat\beta_{gentoo} 
+\end{aligned}
+$$
+The 95% confidence window for each of the covariate coefficient is also given above. 
+
+
+A Tukey-Anscombe plot to evaluate the fit of the model is generated below. No clear correlation can be seen between the residuals and fitted values, indicating that the expected value of the residual is 0 and that they all have the same variance.
+```{r fig.dim = c(10,10)}
+library(sfsmisc)
+TA.plot( penguin.model.mine, fit = fitted(penguin.model.mine), res = residuals(penguin.model.mine), labels = "*" )
+
+
+
+```
+
+
 # Problem 3
+
 Load and prepare data the problem 3
+
 ```{r}
 # Load libraries
 library(tidyverse)
@@ -131,8 +248,11 @@ train_ind <- sample(seq_len(nrow(Penguins_reduced)), size = training_set_size)
 train <- Penguins_reduced[train_ind, ]
 test <- Penguins_reduced[-train_ind, ]
 ```
+
 ## a)
+
 # i)
+
 ```{r}
 # Make logistic regression model
 model.LR <- glm(adelie ~ body_mass_g + flipper_length_mm,
@@ -140,12 +260,14 @@ model.LR <- glm(adelie ~ body_mass_g + flipper_length_mm,
                  data=train)
 
 # Get classification probabilities
-pred.LR.prob <- model.LR %>% predict(test)
+pred.LR.prob <- model.LR %>% predict(test, type="response")
 
 # Classify on test set using 0.5 cutoff
 pred.LR <- ifelse(pred.LR.prob > 0.5, 1, 0)
 ```
+
 # ii)
+
 ```{r}
 # Make quadratic discriminant analysis model
 model.QDA <- qda(adelie ~ body_mass_g + flipper_length_mm,
@@ -159,6 +281,7 @@ pred.QDA <- ifelse(pred.QDA.prob > 0.5, 1, 0)
 ```
 
 # iii)
+
 ```{r}
 # K-nearest neighbor
 model.KNN <- knn(train = train,
@@ -175,19 +298,29 @@ pred.KNN <- model.KNN[0:nrow(test)]
 ```
 
 # iv)
+
 ```{r}
 # Calculate specificity and sensitivity
+print("Sensitivity for logistic regression:")
 sensitivity(as.factor(pred.LR), as.factor(test$adelie))
-sensitivity(as.factor(pred.KNN), as.factor(test$adelie))
+print("Sensitivity for QDA:")
 sensitivity(as.factor(pred.QDA), as.factor(test$adelie))
+print("Sensitivity for KNN:")
+sensitivity(as.factor(pred.KNN), as.factor(test$adelie))
 
+print("Specificity for logistic regression:")
 specificity(as.factor(pred.LR), as.factor(test$adelie))
-specificity(as.factor(pred.KNN), as.factor(test$adelie))
+print("Specificity for QDA:")
 specificity(as.factor(pred.QDA), as.factor(test$adelie))
+print("Specificity for KNN:")
+specificity(as.factor(pred.KNN), as.factor(test$adelie))
 
 ```
 
 ## b)
+
+# i)
+
 ```{r}
 # ROC for different classifiers
 roc.LR <- roc(test$adelie, pred.LR.prob)
@@ -212,26 +345,36 @@ ggroc(roc.list, aes = "col",legacy.axes = TRUE) +
 roc.LR$auc
 roc.KNN$auc
 roc.QDA$auc
-
-
 ```
+
+# ii)
+
+The ROC curve shows how the binary classifiers are performing with a varying threshold. The plot shows the true positive rate, or sensitivity, against the true negative rate, or 1 - specificity. If a classifier is on the black diagonal line it performs just as good as guessing randomly and if it lays above the diagonal line it performs better. This means that a classifier is better the further up in the left corner its ROC curve are. In this case the logistic regression and the QDA performs better than the KNN classifier.
+
+The AUC, or area under the curve, is just the area under the ROC curve and provides an aggregate measure of all classifiers for all thresholds. As expected, the AUC for the logistic regression and the QDA are higher than the one for the KNN indicating better performance.
+
+# iii)
+
+We would say the logistic regression model is the most interpretable model. This model provides easy to understand betas telling about the realtionship between the body mass and flipper length and if the penguin is Adelie or not. The two other models does not provide the same information about the data.
+
 ## c)
+
 ```{r}
 model.LR$coefficients
 ```
-Increasing the body mass of penguin with 1000g will result in the following change in the oddds
 
-$$ 
-\begin{equation}
+Increasing the body mass of penguin with 1000g will result in the following change in the odds
 
-exp(0.0007120 * 1000) = 2.028
+\$\$ \begin{equation}
 
-\end{equation}
-$$
-The odds increases by a factor of 2.028.
+exp(0.0007120 * 1000) = 2.038
 
+\end{equation} \$\$
+
+The odds increases by a factor of 2.038. Alternative iii.
 
 ## d)
+
 ```{r}
 # Get all data, from both test and training
 penguins.pred.all <- Penguins_reduced %>% dplyr::select(-adelie)
@@ -253,15 +396,13 @@ ggplot(penguins.pred.all, aes(x=flipper_length_mm, y=body_mass_g)) +
   scale_shape_discrete(labels=c("Not Adelie", "Adelie"))
 ```
 
-
 # Problem 4
 
 ## a)
-$$\begin{matrix}
-i & ii & iii & iv\\ 
-\hline\\
-TRUE & FALSE & FALSE & FALSE\\
-\end{matrix}$$
+(i) True. The process for validation set approach is only necessary to be repeated once but 10 times in 10-fold CV.
+(ii)False. LOOCV has the highest variance as the datasets used between training are highly correlated and differ only by one observation which can lead to high variance between completely new datasets.
+(iii)False. In the validation set-approach the data is split randomly into 2 equal sets with 1 set being the training set and the other being the validation set. In the 2-fold CV the data is again randomly split into 2 equal parts but each data set take turn being the training and validation set.
+(iv) False. LOOCV is the most computationally expensive way to do cross-validation. 
 
 ## b) 
 ```{r}
