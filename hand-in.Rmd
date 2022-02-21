@@ -16,19 +16,8 @@ knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.wh
 ```
 
 ```{r,eval=TRUE,echo=FALSE}
-# install.packages("knitr") #probably already installed
-# install.packages("rmarkdown") #probably already installed
-# install.packages("ggplot2") #plotting with ggplot
-# install.packages("palmerpenguins")
-# install.packages("ggfortify") # For model checking
-# install.packages("MASS")
-# install.packages("class")
-# install.packages("pROC")
-# install.packages("plotROC")
-# install.packages("boot")
 library("knitr")
 library("rmarkdown")
-library("palmerpenguins")
 ```
 
 <!--  Etc (load all packages needed). -->
@@ -37,7 +26,8 @@ library("palmerpenguins")
 
 ## a)
 The expected MSE on the test set is given by:
-$$\begin{aligned}
+$$
+\begin{aligned}
   E[(y_0 - \hat{f}(x_0))^2] 
   &= E[(f(x_0) - \hat{f}(x_0) + \epsilon)^2] \\
   &= E[(f(x_0) - \hat{f}(x_0))^2] + 2E[\epsilon(f(x_0) - \hat{f}(x_0))] + E[\epsilon^2] \\
@@ -47,41 +37,37 @@ $$\begin{aligned}
   &= \left \{E[f(x_0) - \hat{f}(x_0)]^2\right \}  + \left\{ E[\hat{f}(x_0)^2] - E[\hat{f}(x_0)]^2\right \} + E[\epsilon^2]\\
   &= E[f(x_0) - \hat{f}(x_0)]^2 + Var[\hat{f}(x_0)] + Var[\epsilon]\\
   &= \text{Squared bias} + \text{Variance of prediction} + \text{Irreducible error}\\ 
-\end{aligned}$$
+\end{aligned}
+$$
 
 ## b)
 
 The squared bias term represents the expected squared deviation between the prediction of the "true" model and the prediction of the fitted model. The variance of prediction term represents the degree to which the prediction of the fitted model can vary depending on the input. Higher variance of prediction means the model can adapt it's prediction to input data to a greater extent than a simpler model, implying that the model is more flexible. However, the increased "adaptability" may be unwanted if it leads to overfitting.
 
 ## c)
-
-$$\begin{matrix}
+$$
+\begin{matrix}
 i & ii & iii & iv\\ 
 \hline\\
 TRUE & FALSE & TRUE & FALSE\\
-\end{matrix}$$
+\end{matrix}
+$$
 
 ## d)
 
-$$\begin{matrix}
+$$
+\begin{matrix}
 i & ii & iii & iv\\ 
 \hline\\
 TRUE & FALSE & TRUE & FALSE\\
-\end{matrix}$$
+\end{matrix}
+$$
 
 ## e)
-
-```{r}
-library(matrixcalc)
-mat <- cbind(c(50, 33, 18), c(33, 38, -10), c(18, -10, 72))
-is.positive.semi.definite(mat)
-```
 
 Answer: iii) 0.76
 
 # Problem 2
-
-Here is a code chunk:
 
 ```{r, eval=TRUE}
 library(palmerpenguins) # Contains the data set "penguins".
@@ -90,102 +76,81 @@ head(penguins)
 ```
 
 ## a)
+### 1)
+Basel has not visualized the data prior to fitting the model, and has instead relied on "expert knowledge" to
+fit the model. This has resulted in Basel dropping the bill length covariate from the model despite 
+not having investigated it's significance in the first place.
 
-  1)Basel have understood the meaning of p-values. He has excluded the sex covariate as he mentioned that it has the smallest p-value. However, a small p-value indicates that the  sex covariate has significant importance in determine the body mass of penguins. A F-test should be conducted before the choice of omitting the sex covariate.   
-  2)The body  mass of penguins has been described to be dependent on the species of the penguin. This done despite the fact that species have the highest p-value in the original model. This is evident by an extremely high p-value for the species coefficients in the final model which suggests that there is a high probability for observing the null hypothesis, where there is no relationship between species and body mass.A F-test can be conducted to determine if species should be omitted. 
-  3)Basel concludes that chinstrap penguins have the largest body mass from the fact that the dummy variable for chinstrap penguins have the largest value. However he does not consider that the interaction effect between bill depth and Chinstrap is the only negative term while the others are positive. The final body mass for chinstraps can therefore be lower than the other species due to this interaction term. Correlation between bill depth and species are not considered as well.
-   
+
+### 2)
+Basel has not understood the meaning of p-values. He has excluded the sex covariate as he mentioned that it has the smallest p-value. However, a small p-value may indicate that the sex covariate is significant in determining the body mass of penguins. In any case, an F-test should be conducted to determine whether the sex covariate should be omitted or kept, instead of looking directly at the p-value for the sex coefficient in the full model.   
+
+
+### 3)
+Basel concludes that chinstrap penguins have the largest body mass from the fact that the coefficient for chinstrap penguins has the largest value. However, he does not consider that the only negative interaction coefficient in the model is the coefficient for the interaction between bill depth and Chinstrap. The final body mass for chinstraps can therefore be lower than the other species due to this interaction coefficient.
 
 ## b)
-```{r, echo = FALSE, fig.dim = c(10,10)}
-############## =^._.^=  ~~~BASIL'S CODE~~~  =^._.^= ############## 
-#install.packages("palmerpenguins")  # Run if you haven't installed this before.
-
-
+```{r}
 library(palmerpenguins) # Contains the data set "penguins".
 data(penguins)
-
 # Remove island, and year variable, as we won't use those.
-Penguins <- subset(penguins, select = -c(island, year))
-
-library(GGally)
-gpairs_sex <- ggpairs(Penguins, mapping = ggplot2::aes(colour = sex))
-primary_var <- "body_mass_g"
-pvar_pos <- match(primary_var, gpairs_sex$xAxisLabels)
-plots <- lapply(1:gpairs_sex$ncol, function(j) getPlot(gpairs_sex, i = pvar_pos, j = j))
-ggmatrix(
-    plots,
-    nrow = 1,
-    ncol = gpairs_sex$ncol,
-    xAxisLabels = gpairs_sex$xAxisLabels,
-    yAxisLabels = primary_var,
-    title = "Body Mass to sex correlations"
-)
-gpairs_species <- ggpairs(Penguins, mapping = ggplot2::aes(colour = species))
-primary_var <- "body_mass_g"
-pvar_pos <- match(primary_var, gpairs_species$xAxisLabels)
-plots <- lapply(1:gpairs_species$ncol, function(j) getPlot(gpairs_species, i = pvar_pos, j = j))
-ggmatrix(
-    plots,
-    nrow = 1,
-    ncol = gpairs_species$ncol,
-    xAxisLabels = gpairs_species$xAxisLabels,
-    yAxisLabels = primary_var,
-    title = "Body Mass to species correlations"
-)
+Penguins <- na.omit(subset(penguins, select = -c(island, year)))
+boxplot(body_mass_g ~ sex, data=Penguins)
 ```
-The plots above show the factors for body mass first separated by sex and then by species. From the body mass to sex correlations plots, it can be seen that in general, male penguins have a higher body mass than females. Sex covariate should therefore be considered. From the species plot, it can be seen that Gentoo penguins in general have a higher body mass and therefore Basil's conclusion that Chinstrap penguins have the highest mass is incorrect. THe omission of bill length might also not be correct as there appears to be a correlation between bill length and body mass. Finally, Basel might not be right in his assessment that there is an interaction between the covariates species and bill depth. The slopes of the trend line between bill depth and body mass appears to remain constant regardless of the species. From the plots, there does not appear to be any interaction terms between sex and any other covariates.
-
-Basel should probably have first get a rough estimation of the importance of various covariates for body mass by generating these plots to get an overall picture at least graphically
-
-
-
-## c)
+Judging from the box-plot above, the sex factor appears to be significant, 
+with males having a larger average body mass than females. 
 
 ```{r}
-############## =^._.^=  ~~~BASIL'S CODE~~~  =^._.^= ############## 
-#install.packages("palmerpenguins")  # Run if you haven't installed this before.
+boxplot(body_mass_g ~ species, data=Penguins)
+```
+Contrary to Basel's claim, we see that Gentoo is the species with the largest average body mass, not Chinstrap.
 
-
-library(palmerpenguins) # Contains the data set "penguins".
-data(penguins)
-
-# Remove island, and year variable, as we won't use those.
-Penguins <- subset(penguins, select = -c(island, year))
-
-# Fit the model as specified in advance based on expert knowledge:
-penguin.model.initial <- lm(body_mass_g ~ flipper_length_mm  + bill_length_mm + bill_depth_mm*species, 
+## c)
+Original model
+```{r}
+# Fit the model as specified in advance based on "expert" knowledge:
+penguin.model.initial <- lm(body_mass_g ~ flipper_length_mm  + sex + bill_depth_mm * species, 
                     data = Penguins)
-
-
+summary(penguin.model.initial)
+```
+Basel's model
+```{r}
 penguin.model.basel <- lm(body_mass_g ~ flipper_length_mm + bill_depth_mm*species, 
                   data = Penguins)
+summary(penguin.model.basel)
+```
+Improved model
+```{r}
+# Fit model with sex
+penguin.model.improved <- lm(body_mass_g ~ flipper_length_mm + species + bill_length_mm + bill_depth_mm + sex, data = Penguins)
+summary(penguin.model.improved)
+```
 
-penguin.model.mine <- lm(body_mass_g ~ flipper_length_mm  + bill_length_mm + species +  bill_depth_mm, data = Penguins)
+```{r}
+#F-test between initial model and Basel's model
+anova(penguin.model.initial, penguin.model.basel)
+```
+Wee see from the p-value (< 2.2e-16) that the sex covariate appears 
+to be highly significant , and that Basils model got worse 
+(SSE increased by 7736349) by excluding it from the model.
+```{r}
+#F-Test between initial model and 
+anova(penguin.model.improved, penguin.model.initial)
+```
 
+```{r}
+# Fit model without sex
+penguin.model.improved.red <- lm(body_mass_g ~ flipper_length_mm  + bill_length_mm + species + bill_depth_mm, data = Penguins)
+# Compare
+anova(penguin.model.improved, penguin.model.improved.red)
+```
+Once again we observe that the model 
 
-# Look at the model coefficients
-print("Original model")
-summary(penguin.model.initial)$coefficients
-print("Basel's model")
-summary(penguin.model.basel)$coefficients
-print("Final model")
-summary(penguin.model.mine)$coefficients
+#F-test between our improved model and the initial model
 
-# Fit final model without sex
-summary(penguin.model.mine)
-
-#F-test between initial model and Basel's final model
-anova(penguin.model.basel,penguin.model.mine)
-
-#F-test between initial model and our final model
-anova(penguin.model.initial,penguin.model.mine)
 
 #95% confidence interval of our model
-confint(penguin.model.mine)
-
-
-
+confint(penguin.model.improved)
 ```
 
 In the initial model, a linear regression with body mass as the response, and flipper length, bill depth, bill length, species and sex as covariates, as well as an interaction effect between bill depth and species. An F-test was conduceted between the original model with all covariates and basel's model resulting in a F-value of 34.5 and Pr(>F) of 1.049e-08. This indicates that the covariate terms that Basel have eliminated were actually quite important and should be included. Looking back at the original model, the interaction term between species and bill depth has the highest p-value and therefore a model without the interaction term was considered. This theory was further evidenced by plots generated in part (b).An F-test was conducted to check the importance of the interaction term between billdepth and species. This gave a F-value of 5.1625 and a Pr(>F) of 0.006193. Though this might mean that the interaction term between billdepth and species have some significance, it is the least significant and have been chosen to be omitted for simplicity. The final model without the interaction term have low p-values for all included covariates. Based on the dummy variable for Gentoo penguins being the largest (657), and no species interaction term the Gentoo penguins have in general the largest mass. However this is done assuming that the other covariates, bill_depth and flipper_length, are independent of species, which might not the case. The final model is therefore given by the equations.    
@@ -203,7 +168,7 @@ The 95% confidence window for each of the covariate coefficient is also given ab
 A Tukey-Anscombe plot to evaluate the fit of the model is generated below. No clear correlation can be seen between the residuals and fitted values, indicating that the expected value of the residual is 0 and that they all have the same variance.
 ```{r fig.dim = c(10,10)}
 library(sfsmisc)
-TA.plot( penguin.model.mine, fit = fitted(penguin.model.mine), res = residuals(penguin.model.mine), labels = "*" )
+TA.plot( penguin.model.improved, fit = fitted(penguin.model.improved), res = residuals(penguin.model.improved), labels = "*" )
 
 
 
@@ -365,11 +330,9 @@ model.LR$coefficients
 
 Increasing the body mass of penguin with 1000g will result in the following change in the odds
 
-\$\$ \begin{equation}
-
+$$
 exp(0.0007120 * 1000) = 2.038
-
-\end{equation} \$\$
+$$
 
 The odds increases by a factor of 2.038. Alternative iii.
 
@@ -459,8 +422,10 @@ The upper limit of .1843 is perhaps most useful as it provides an upper
 97.5 % confidence bound on estimated conditional chd risk.
 
 ## d)
-$$\begin{matrix}
+$$
+\begin{matrix}
 i & ii & iii & iv\\ 
 \hline\\
 FALSE & FALSE & TRUE & TRUE\\
-\end{matrix}$$
+\end{matrix}
+$$
